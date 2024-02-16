@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(of="id")
 public class Stock {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private String symbol;
@@ -28,27 +29,6 @@ public class Stock {
     }
 
     public double changePrice(double amount, boolean increase) {
-        if (increase) {
-            if (amount < this.price) {
-                return increasePrice(amount);
-            } else {
-                return decreasePrice(amount);
-            }
-        } else {
-            if (amount > this.price) {
-                return increasePrice(amount);
-            } else {
-                return this.decreasePrice(amount);
-            }
-        }
+        return increase ? this.price + amount : this.price - amount;
     }
-
-    public double increasePrice(double amount) {
-        return this.price + amount;
-    }
-
-    public double decreasePrice(double amount) {
-        return this.price - amount;
-    }
-
 }

@@ -1,13 +1,12 @@
 package com.mandacarubroker.controller;
 
-
-import com.mandacarubroker.domain.stock.*;
-import com.mandacarubroker.service.*;
-import org.springframework.http.*;
+import com.mandacarubroker.domain.stock.RequestStockDTO;
+import com.mandacarubroker.domain.stock.Stock;
+import com.mandacarubroker.service.StockService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/stocks")
@@ -26,12 +25,13 @@ public class StockController {
 
     @GetMapping("/{id}")
     public Stock getStockById(@PathVariable String id) {
+        Stock stock = stockService.getStockById(id).orElse(null);
         return stockService.getStockById(id).orElse(null);
     }
 
     @PostMapping
     public ResponseEntity<Stock> createStock(@RequestBody RequestStockDTO data) {
-        Stock createdStock = stockService.createStock(data);
+        Stock createdStock = stockService.validateAndCreateStock(data);
         return ResponseEntity.ok(createdStock);
     }
 
@@ -41,8 +41,8 @@ public class StockController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteStock(@PathVariable String id) {
-        stockService.deleteStock(id);
+    public ResponseEntity<?> deleteStock(@PathVariable String id) {        stockService.deleteStock(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

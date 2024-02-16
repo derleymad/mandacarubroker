@@ -3,8 +3,13 @@ package com.mandacarubroker.service;
 import com.mandacarubroker.domain.stock.RequestStockDTO;
 import com.mandacarubroker.domain.stock.Stock;
 import com.mandacarubroker.domain.stock.StockRepository;
-import jakarta.validation.*;
 import org.springframework.stereotype.Service;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolation;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +17,6 @@ import java.util.Set;
 
 @Service
 public class StockService {
-
-
     private final StockRepository stockRepository;
 
     public StockService(StockRepository stockRepository) {
@@ -28,9 +31,9 @@ public class StockService {
         return stockRepository.findById(id);
     }
 
-    public Stock createStock(RequestStockDTO data) {
-        Stock novaAcao = new Stock(data);
+    public Stock validateAndCreateStock(RequestStockDTO data) {
         validateRequestStockDTO(data);
+        Stock novaAcao = new Stock(data);
         return stockRepository.save(novaAcao);
     }
 
@@ -41,7 +44,6 @@ public class StockService {
                     stock.setCompanyName(updatedStock.getCompanyName());
                     double newPrice = stock.changePrice(updatedStock.getPrice(), true);
                     stock.setPrice(newPrice);
-
                     return stockRepository.save(stock);
                 });
     }
@@ -51,8 +53,12 @@ public class StockService {
     }
 
     public static void validateRequestStockDTO(RequestStockDTO data) {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
+        Validator validator;
+
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            validator = factory.getValidator();
+        }
+
         Set<ConstraintViolation<RequestStockDTO>> violations = validator.validate(data);
 
         if (!violations.isEmpty()) {
@@ -66,12 +72,5 @@ public class StockService {
 
             throw new ConstraintViolationException(errorMessage.toString(), violations);
         }
-    }
-
-    public void validateAndCreateStock(RequestStockDTO data) {
-        validateRequestStockDTO(data);
-
-        Stock novaAcao = new Stock(data);
-        stockRepository.save(novaAcao);
     }
 }
